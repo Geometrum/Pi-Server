@@ -7,8 +7,8 @@ fi
 
 echo '#!/bin/bash' > /var/www/update.sh
 echo '' >> /var/www/update.sh
-echo 'if [ \"$(whoami)\" != \'root\' ]; then' >> /var/www/update.sh
-echo '  echo \'Run script as ROOT please (sudo)\'' >> /var/www/update.sh
+echo 'if [ "$(whoami)" != "root" ]; then' >> /var/www/update.sh
+echo '  echo "Run script as ROOT please (sudo)"' >> /var/www/update.sh
 echo '  exit' >> /var/www/update.sh
 echo 'fi' >> /var/www/update.sh
 echo '' >> /var/www/update.sh
@@ -40,7 +40,7 @@ tar -xvf nextcloud*
 mv nextcloud /var/www/cloud
 rm -rf nextcloud*
 
-ip = $(ifconfig | grep 'inet adr:192' | sed -e 's/^.*inet adr:\([0-9\.]*\).*/\1/')
+ip=$(ifconfig | grep 'inet adr:192' | sed -e 's/^.*inet adr:\([0-9\.]*\).*/\1/')
 echo '# Include phpmyadmin with /phpmyadmin and cloud with /cloud' > /etc/apache2/sites-available/local.conf
 echo '<VirtualHost *:80>' >> /etc/apache2/sites-available/local.conf
 echo '	ServerName localhost' >> /etc/apache2/sites-available/local.conf
@@ -67,8 +67,8 @@ mount -t ntfs-3g -o defaults,permissions,nofail /dev/sda1 /var/www/cloud/data
 
 echo '#!/bin/bash' > /var/www/update-permissions.sh
 echo '' >> /var/www/update-permissions.sh
-echo 'if [ \"$(whoami)\" != \'root\' ]; then' >> /var/www/update-permissions.sh
-echo '	echo \'Run script as ROOT please (sudo)\'' >> /var/www/update-permissions.sh
+echo 'if [ "$(whoami)" != "root" ]; then' >> /var/www/update-permissions.sh
+echo '	echo "Run script as ROOT please (sudo)"' >> /var/www/update-permissions.sh
 echo '	exit' >> /var/www/update-permissions.sh
 echo 'fi' >> /var/www/update-permissions.sh
 echo '' >> /var/www/update-permissions.sh

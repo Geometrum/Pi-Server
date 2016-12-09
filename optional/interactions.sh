@@ -24,7 +24,7 @@ sed -i "s/^UsePAM yes/#UsePAM yes/" $sshd_file
 echo '' >> $sshd_file
 echo '# Directory for sftp users' >> $sshd_file
 echo 'SubSystem sftp internal-sftp' >> $sshd_file
-echo 'Match Group sftp' >> $sshd_file
+echo 'Match Group www-data' >> $sshd_file
 echo '	ChrootDirectory %h' >> $sshd_file
 echo '	ForceCommand internal-sftp' >> $sshd_file
 echo 'AllowGroups www-data' >> $sshd_file
@@ -32,17 +32,12 @@ echo 'AllowGroups www-data' >> $sshd_file
 echo ''
 echo ''
 echo 'Creation of your sftp account (sftp)'
-groupadd sftp
 useradd -g www-data sftp -s /bin/false
-usermod -a -G sftp sftp
 passwd sftp
-mkdir /home/sftp
-mkdir /home/sftp/{html,errors}
+mkdir /home/sftp/{,html}
 mount --bind /var/www/html /home/sftp/html
-mount --bind /var/www/errors /home/sftp/errors
 echo '# Mount server points' >> /etc/fstab
-echo '/var/www/html	/home/sftp/html	none	defaults,blind	0	0' >> /etc/fstab
-echo '/var/www/errors	/home/sftp/errors	none	defaults,blind	0	0' >> /etc/fstab
+echo '/var/www/html	/home/sftp/html	none	defaults,blind' >> /etc/fstab
 chown -R root:www-data /home/sftp
 chmod 750 /home/sftp
 chmod 770 /home/sftp/*
@@ -57,17 +52,20 @@ echo '' >> $add_user_file
 echo 'read -p "New user to create with directory in /var/www/html: " user' >> $add_user_file
 echo '' >> $add_user_file
 echo 'useradd -g www-data $user -s /bin/false' >> $add_user_file
-echo 'usermod -a -G sftp $user' >> $add_user_file
 echo 'passwd $user' >> $add_user_file
 echo '' >> $add_user_file
 echo 'mkdir /var/www/html/$user /home/$user/{,html}' >> $add_user_file
 echo 'mount --bind /var/www/html/$user /home/$user/html' >> $add_user_file
-echo 'echo "/var/www/html/$user	/home/$user/html	none	defaults,bind	0	0" >> /etc/fstab' >> $add_user_file
+echo 'echo "/var/www/html/$user	/home/$user/html	none	defaults,bind" >> /etc/fstab' >> $add_user_file
+echo '' >> $add_user_file
+echo 'read -sp "Password for $user to connect to phpmyadmin: " pass' >> $add_user_file
+echo 'echo "Tape your pass to be connected on mysql as root"' >> $add_user_file
+echo 'mysql -u root -e "FLUSH PRIVILEGES;CREATE DATABASE $user;GRANT ALL PRIVILEGES ON $user.* TO \"$user\"@\"%\" IDENTIFIED BY \"$pass\";" -p' >> $add_user_file
+echo '' >> $add_user_file
 echo 'chown -R root:www-data /home/$user' >> $add_user_file
 echo 'chmod 750 /home/$user' >> $add_user_file
 echo 'chmod 770 /home/$user/*' >> $add_user_file
 echo "echo \"<?php echo 'Welcome to your directory, \$user'; ?>\" > /var/www/html/\$user/index.php" >> $add_user_file
-echo '' >> $add_user_file
 echo $permissions_file >> $add_user_file
 echo '' >> $add_user_file
 echo 'echo ""' >> $add_user_file
@@ -91,6 +89,9 @@ echo 'umount /home/$user/*' >> $del_user_file
 echo 'sed -i "/\\/home\/$user/d" /etc/fstab' >> $del_user_file
 echo 'rm -rf /var/www/html/$user /home/$user' >> $del_user_file
 echo $permissions_file >> $del_user_file
+echo '' >> $del_user_file
+echo 'echo "Tape your pass to be connected on mysql as root"' >> $del_user_file
+echo 'mysql -u root -e "FLUSH PRIVILEGES;DROP DATABASE $user;DROP USER \"$user\"@\"%\"" -p' >> $del_user_file
 echo '' >> $del_user_file
 echo 'echo ""' >> $del_user_file
 echo 'echo ""' >> $del_user_file
