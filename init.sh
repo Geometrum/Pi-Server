@@ -1,9 +1,5 @@
 #!/bin/bash
-
-if [ "$(whoami)" != 'root' ]; then
-	echo 'Run script as ROOT please (sudo)'
-	exit
-fi
+source incl/include.sh
 
 apt-get -y update
 apt-get -y upgrade
