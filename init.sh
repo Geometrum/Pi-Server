@@ -24,7 +24,10 @@ sudo systemctl disable hciuart
 
 apt-get --assume-yes remove apt-listchanges
 
+<<<<<<< HEAD
 # No more useful
+=======
+>>>>>>> 4e939f6f3a8d8705041acd464f1fb02c8f7929b6
 #sed -i "s/#^deb-src /deb-src /" /etc/apt/sources.list
 # echo -e "# Add directory for PHP7 and update to Stretch version
 # deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi" > /etc/apt/sources.list.d/stretch.list
