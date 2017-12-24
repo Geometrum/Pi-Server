@@ -1,0 +1,2 @@
+- html is your website directory
+- log is where all your logs are (php errors, access logs, slow logs)

@@ -1,0 +1,56 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:	firewall
+# Required-Start:	$remote_fs $syslog
+# Required-Stop:	$remote_fs $syslog
+# Default-Start:	2 3 4 5
+# Default-Stop:	0 1 6
+# Short-Description:	Iptables
+# Description:	Load all ip rules set for the server
+### END INIT INFO
+
+# Delete all rules
+iptables -t filter -F
+iptables -t filter -X
+
+# Block all requests
+iptables -t filter -P INPUT DROP
+iptables -t filter -P FORWARD DROP
+iptables -t filter -P OUTPUT DROP
+
+# Don't end already established connexions
+iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Allow ping requests
+iptables -t filter -A INPUT -p icmp -j ACCEPT
+iptables -t filter -A OUTPUT -p icmp -j ACCEPT
+
+# Allow localhost requests
+iptables -t filter -A INPUT -i lo -j ACCEPT
+iptables -t filter -A OUTPUT -o lo -j ACCEPT
+
+# Allow DNS requests
+iptables -t filter -A INPUT -p tcp --dport 53 -j ACCEPT
+iptables -t filter -A INPUT -p udp --dport 53 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 53 -j ACCEPT
+iptables -t filter -A OUTPUT -p udp --dport 53 -j ACCEPT
+
+# Allow SSH requests
+iptables -t filter -A INPUT -p tcp --dport $ssh_port -j ACCEPT
+# Allow only local SSH: iptables -t filter -A INPUT -p tcp -m iprange --src-range 192.168.1.0-192.168.1.255 --dport $ssh_port -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport $ssh_port -j ACCEPT
+
+# Allow getting current time
+iptables -t filter -A OUTPUT -p udp --dport 123 -j ACCEPT
+
+# Prevention from DDos
+iptables -A FORWARD -p tcp --tcp-flags SYN,ACK,FIN,RST RST -m limit --limit 1/second -j ACCEPT
+iptables -A FORWARD -p udp -m limit --limit 1/second -j ACCEPT
+iptables -A FORWARD -p icmp --icmp-type echo-request -m limit --limit 1/second -j ACCEPT
+portsentry -audp
+portsentry -atcp
+
+# IPs banned
+# iptables -A INPUT -s ip_adress -j DROP

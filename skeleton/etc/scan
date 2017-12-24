@@ -1,0 +1,31 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:	scan
+# Required-Start:	$remote_fs $syslog
+# Required-Stop:	$remote_fs $syslog
+# Default-Start:	2 3 4 5
+# Default-Stop:	0 1 6
+# Short-Description:	Detect scan demand
+# Description:	When the button is pressed, a scan demand is made
+### END INIT INFO
+
+pin=18
+scan_command='/usr/bin/scanimage'
+scan_dir='/var/www/scan'
+scan_output="$scan_dir/output"
+toType='/usr/bin/pnmt$ojpeg'
+owner='www-data:www-data'
+
+gpio -g write $pin up
+
+while [ true ]; do
+  input=$(gpio -g read $pin)
+
+  if [ $input = '0' ]; then
+    moment=$(date +%Y-%m-%d' '%H.%M.%S)
+    $scan_command --mode "Color" --resolution=300dpi | $toType --quality=100 > "$scan_output/scan_$moment.jpg"
+    chown $owner "$scan_output/scan_$moment.jpg"
+    chmod 660 "$scan_output/scan_$moment.jpg"
+  fi
+done
