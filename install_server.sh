@@ -74,14 +74,13 @@ source incl/include.sh
 user="$1"
 cp $script_dir/skeleton/php-fpm/user.conf /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$user/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s~chroot = .*$~chroot = $www/$user~g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s~php_value[session.save_path] = .*$~php_value[session.save_path] = $www/$user/session~g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~\$www_dir/$www_dir~g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$domain/$server_domain/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$tld/$server_tld/g" /etc/php/7.0/fpm/pool.d/$user.conf' > $add_user_file
 chmod +x $add_user_file
 $add_user_file www
-sed -i "s~chroot = .*$~chroot = $www_dir/html~g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s~php_value[session.save_path] = .*$~php_value[session.save_path] = $www_dir/session~g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~chroot = .*$~chroot = $www_dir/html~g" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s~php_value[session.save_path] = .*$~php_value[session.save_path] = $www_dir/session~g" /etc/php/7.0/fpm/pool.d/www.conf
 mkdir $www_dir/session
 
 domain=$server_domain
@@ -93,10 +92,10 @@ sed -i "s/\$phpmyadmin_file/\/etc\/phpmyadmin\/apache.conf/g" $apache_available_
 sed -i "s/\$nextcloud_name/$nextcloud_name/g" $apache_available_dir/local.conf
 sed -i "s~\$nextcloud_dir~$nextcloud_dir~g" $apache_available_dir/local.conf
 
-cp $script_dir/skeleton/apache/SSL.conf $apache_available_dir/SSL.conf
-sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL.conf
-sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL.conf
-sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL.conf
+cp $script_dir/skeleton/apache/SSL-www.conf $apache_available_dir/SSL-www.conf
+sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-www.conf
+sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-www.conf
+sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL-www.conf
 
 user='phpmyadmin'
 cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
@@ -107,14 +106,6 @@ sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
 sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-$user.conf
 sed -i "s~\$www_dir~$www~g" $apache_available_dir/SSL-$user.conf
 $add_user_file $user
-
-user='www'
-cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
-sed -i "s~DocumentRoot \$www_dir/\$user/html~DocumentRoot $www_dir/html~g" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$user/$user/g" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-$user.conf
-sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL-$user.conf
 
 mkdir $www_dir/phpmyadmin/{,log}
 ln -s /usr/share/phpmyadmin $www_dir/phpmyadmin/html
@@ -141,7 +132,7 @@ systemctl daemon-reload
 certbot --apache --expand -d $server_domain.$server_tld -d $user.$server_domain.$server_tld' >> $add_user_file
 
 rm -rf $apache_enabled_dir/*
-a2ensite local SSL SSL-phpmyadmin
+a2ensite local SSL-www SSL-phpmyadmin
 
 systemctl daemon-reload
 /etc/init.d/php7.0-fpm restart
