@@ -9,13 +9,9 @@ passwd $sftp_user
 
 echo -e "
 
-# Allow HTTP requests
+# Allow input HTTP(S) requests
 iptables -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
-iptables -t filter -A OUTPUT -p tcp --dport 80 -j ACCEPT
-
-# Allow HTTPS requests
-iptables -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
-iptables -t filter -A OUTPUT -p tcp --dport 443 -j ACCEPT" >> /etc/init.d/firewall
+iptables -t filter -A INPUT -p tcp --dport 443 -j ACCEPT" >> /etc/init.d/firewall
 /etc/init.d/firewall
 
 echo -e "

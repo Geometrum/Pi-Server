@@ -45,7 +45,7 @@ apt-get --assume-yes install portsentry fail2ban rkhunter
 apt-get --assume-yes install -f
 apt-get --assume-yes autoremove
 
-cp -rf /home/pi/ /home/$ssh_user/
+cp -rf /home/pi/* /home/$ssh_user/
 chown -R $ssh_user:$ssh_user /home/$ssh_user/
 mkdir $script_dir
 cp -rf incl $script_dir/
@@ -75,6 +75,6 @@ sed -i "s/^Subsystem sftp/#Subsystem sftp/" $ssh_file
 
 sed -i 's/\(pi.*\)bin\/.*/\1bin\/false/' /etc/passwd
 
-echo -e "Now, press enter to poweroff. Then, plug your HDD to your Rpi and connect with SSH with your SSH login: $ssh_user. Finally, launch init_final.sh to finalize the initialisation"
+echo -e "Now, press enter to poweroff. Then, plug your HDD to your Rpi and connect with SSH with your SSH login: $ssh_user (you will not be able to connect with pi). Finally, launch init_final.sh to finalize the initialisation"
 read wait
 poweroff

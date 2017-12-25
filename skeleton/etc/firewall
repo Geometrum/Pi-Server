@@ -42,6 +42,10 @@ iptables -t filter -A INPUT -p tcp --dport $ssh_port -j ACCEPT
 # Allow only local SSH: iptables -t filter -A INPUT -p tcp -m iprange --src-range 192.168.1.0-192.168.1.255 --dport $ssh_port -j ACCEPT
 iptables -t filter -A OUTPUT -p tcp --dport $ssh_port -j ACCEPT
 
+# Allow output HTTP(S) requests
+iptables -t filter -A OUTPUT -p tcp --dport 80 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 443 -j ACCEPT
+
 # Allow getting current time
 iptables -t filter -A OUTPUT -p udp --dport 123 -j ACCEPT
 
