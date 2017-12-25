@@ -72,62 +72,59 @@ echo -e '#!/bin/bash
 source incl/include.sh
 
 user="$1"
-www=$(echo $www_dir | sed "s/\//\\\//g")
 cp $script_dir/skeleton/php-fpm/user.conf /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$user/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s/chroot = .*$/chroot = $www\/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s/php_value[session.save_path] = .*$/php_value[session.save_path] = $www\/$user\/session/g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~chroot = .*$~chroot = $www/$user~g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~php_value[session.save_path] = .*$~php_value[session.save_path] = $www/$user/session~g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$domain/$server_domain/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$tld/$server_tld/g" /etc/php/7.0/fpm/pool.d/$user.conf' > $add_user_file
 chmod +x $add_user_file
 $add_user_file www
-sed -i "s/\chroot = .*$/chroot = $www\/html/g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s/\php_value[session.save_path] = .*$/php_value[session.save_path] = $www\/session/g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~chroot = .*$~chroot = $www_dir/html~g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~php_value[session.save_path] = .*$~php_value[session.save_path] = $www_dir/session~g" /etc/php/7.0/fpm/pool.d/$user.conf
 mkdir $www_dir/session
 
-www=$(echo $www_dir | sed "s/\//\\\//g")
 domain=$server_domain
 tld=$server_tld
-cloud_dir=$(echo $nextcloud_dir | sed "s/\//\\\//g")
 cp $script_dir/skeleton/apache/local.conf $apache_available_dir/local.conf
-sed -i "s/\$server_name/$server_name/" $apache_available_dir/local.conf
-sed -i "s/\$local_ip/$local_ip/" $apache_available_dir/local.conf
-sed -i "s/\$phpmyadmin_file/\/etc\/phpmyadmin\/apache.conf/" $apache_available_dir/local.conf
-sed -i "s/\$nextcloud_name/$nextcloud_name/" $apache_available_dir/local.conf
-sed -i "s/\$nextcloud_dir/$cloud_dir/" $apache_available_dir/local.conf
+sed -i "s/\$server_name/$server_name/g" $apache_available_dir/local.conf
+sed -i "s/\$local_ip/$local_ip/g" $apache_available_dir/local.conf
+sed -i "s/\$phpmyadmin_file/\/etc\/phpmyadmin\/apache.conf/g" $apache_available_dir/local.conf
+sed -i "s/\$nextcloud_name/$nextcloud_name/g" $apache_available_dir/local.conf
+sed -i "s~\$nextcloud_dir~$nextcloud_dir~g" $apache_available_dir/local.conf
 
 cp $script_dir/skeleton/apache/SSL.conf $apache_available_dir/SSL.conf
-sed -i "s/\$domain/$domain/" $apache_available_dir/SSL.conf
-sed -i "s/\$tld/$tld/" $apache_available_dir/SSL.conf
-sed -i "s/\$www_dir/$www/" $apache_available_dir/SSL.conf
+sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL.conf
+sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL.conf
+sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL.conf
 
 user='phpmyadmin'
 cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
 sed -i '/SSLEngine On/i\
 \tInclude /etc/phpmyadmin/apache.conf' $apache_available_dir/SSL-phpmyadmin.conf
-sed -i "s/\$user/$user/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$domain/$domain/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$tld/$tld/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$www_dir/$www/" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$user/$user/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-$user.conf
+sed -i "s~\$www_dir~$www~g" $apache_available_dir/SSL-$user.conf
 $add_user_file $user
 
 user='www'
 cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
-sed -i "s/DocumentRoot \$www_dir\/\$user\/html/DocumentRoot $www\/html/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$user/$user/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$domain/$domain/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$tld/$tld/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$www_dir/$www/" $apache_available_dir/SSL-$user.conf
+sed -i "s~DocumentRoot \$www_dir/\$user/html~DocumentRoot $www_dir/html~g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$user/$user/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-$user.conf
+sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL-$user.conf
 
 mkdir $www_dir/phpmyadmin/{,log}
 ln -s /usr/share/phpmyadmin $www_dir/phpmyadmin/html
 
 echo -e '
 cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
-sed -i "s/\$user/$user/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$domain/$domain/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$tld/$tld/" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$www_dir/$www/" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$user/$user/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-$user.conf
+sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL-$user.conf
 
 mkdir $www_dir/$user/
 cp -rf $script_dir/skeleton/user/* $www_dir/$user/
