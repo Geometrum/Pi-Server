@@ -74,7 +74,7 @@ source incl/include.sh
 user="$1"
 cp $script_dir/skeleton/php-fpm/user.conf /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$user/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s~\$www_dir/$www_dir~g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~\$www_dir~$www_dir~g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$domain/$server_domain/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$tld/$server_tld/g" /etc/php/7.0/fpm/pool.d/$user.conf' > $add_user_file
 chmod +x $add_user_file
@@ -104,7 +104,7 @@ sed -i '/SSLEngine On/i\
 sed -i "s/\$user/$user/g" $apache_available_dir/SSL-$user.conf
 sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
 sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-$user.conf
-sed -i "s~\$www_dir~$www~g" $apache_available_dir/SSL-$user.conf
+sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL-$user.conf
 $add_user_file $user
 
 mkdir $www_dir/phpmyadmin/{,log}
