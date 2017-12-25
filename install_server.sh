@@ -75,8 +75,8 @@ user="$1"
 www=$(echo $www_dir | sed "s/\//\\\//g")
 cp $script_dir/skeleton/php-fpm/user.conf /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$user/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s/\chroot = .*$/chroot = $www\/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
-sed -i "s/\php_value[session.save_path] = .*$/php_value[session.save_path] = $www\/$user\/session/g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s/chroot = .*$/chroot = $www\/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s/php_value[session.save_path] = .*$/php_value[session.save_path] = $www\/$user\/session/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$domain/$server_domain/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$tld/$server_tld/g" /etc/php/7.0/fpm/pool.d/$user.conf' > $add_user_file
 chmod +x $add_user_file
