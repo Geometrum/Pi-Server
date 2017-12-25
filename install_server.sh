@@ -57,6 +57,7 @@ mv $web_dir/{index.html,apache.html}
 echo '<?php phpinfo(); ?>' > $web_dir/php.php
 
 mv /etc/php/7.0/fpm/pool.d/www.conf $script_dir/skeleton/php-fpm/www.conf.bckp
+mkdir /var/log/php-fpm/
 sed -i "s/^Alias \/phpmyadmin/#Alias \/phpmyadmin/" /etc/phpmyadmin/apache.conf
 
 echo -e "
@@ -72,15 +73,19 @@ echo -e '#!/bin/bash
 source incl/include.sh
 
 user="$1"
+
+mkdir /var/log/php-fpm/$user
+
 cp $script_dir/skeleton/php-fpm/user.conf /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$user/$user/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s~\$www_dir~$www_dir~g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$domain/$server_domain/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$tld/$server_tld/g" /etc/php/7.0/fpm/pool.d/$user.conf' > $add_user_file
+chown $ssh_user:$ssh_user $add_user_file
 chmod +x $add_user_file
 $add_user_file www
 sed -i "s~chroot = .*$~chroot = $www_dir/html~g" /etc/php/7.0/fpm/pool.d/www.conf
-sed -i "s~php_value[session.save_path] = .*$~php_value[session.save_path] = $www_dir/session~g" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s~php_value\[session.save_path\] = .*$~php_value\[session.save_path\] = $www_dir/session~g" /etc/php/7.0/fpm/pool.d/www.conf
 mkdir $www_dir/session
 
 domain=$server_domain
