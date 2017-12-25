@@ -79,9 +79,10 @@ sed -i "s/\$www_dir/$www/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$domain/$server_domain/g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s/\$tld/$server_tld/g" /etc/php/7.0/fpm/pool.d/$user.conf' > $add_user_file
 chmod +x $add_user_file
-$add_user_file
-sed -i "s/$www\/$user\//$www\/html\//"
+$add_user_file www
+sed -i "s/$www\/$user\//$www\/html\//" /etc/php/7.0/fpm/pool.d/www.conf
 
+www=$(echo $www_dir | sed "s/\//\\\//g")
 domain=$server_domain
 tld=$server_tld
 cloud_dir=$(echo $nextcloud_dir | sed "s/\//\\\//g")
@@ -109,7 +110,7 @@ $add_user_file $user
 
 user='www'
 cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
-sed -i "s/DocumentRoot \$www_dir\/\$user\/html/DocumentRoot \$www_dir\/html/" $apache_available_dir/SSL-$user.conf
+sed -i "s/DocumentRoot \$www_dir\/\$user\/html/DocumentRoot $www\/html/" $apache_available_dir/SSL-$user.conf
 sed -i "s/\$user/$user/" $apache_available_dir/SSL-$user.conf
 sed -i "s/\$domain/$domain/" $apache_available_dir/SSL-$user.conf
 sed -i "s/\$tld/$tld/" $apache_available_dir/SSL-$user.conf
@@ -143,8 +144,8 @@ rm -rf $apache_enabled_dir/*
 a2ensite local SSL SSL-phpmyadmin
 
 systemctl daemon-reload
-/etc/init.d/php7.0-fpm reload
-/etc/init.d/apache2 reload
+/etc/init.d/php7.0-fpm restart
+/etc/init.d/apache2 restart
 
 letsencrypt_options="--apache -d $server_domain.$server_tld"
 for sub in "${server_subdomains[@]}"; do
