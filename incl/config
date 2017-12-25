@@ -24,7 +24,7 @@ nextcloud_name="cloud"
 nextcloud_dir="/opt/nextcloud"
 #nextcloud_others_group=""
 nextcloud_others_group="Extérieur"
-script_dir="/root/script"
+script_dir="/home/$ssh_user/Pi-Server"
 update_SSL_file="$script_dir/update_SSL.sh"
 
 server_domain="nastuzzi"
