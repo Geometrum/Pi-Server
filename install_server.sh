@@ -86,6 +86,7 @@ chmod +x $add_user_file
 $add_user_file www
 sed -i "s~user = .*$~user = www-data~g" /etc/php/7.0/fpm/pool.d/www.conf
 sed -i "s~group = .*$~group = www-data~g" /etc/php/7.0/fpm/pool.d/www.conf
+sed -i "s~listen.owner = .*$~listen.owner = www-data~g" /etc/php/7.0/fpm/pool.d/www.conf
 sed -i "s~chroot = .*$~chroot = $www_dir/html~g" /etc/php/7.0/fpm/pool.d/www.conf
 sed -i "s~chroot = .*$~chroot = $www_dir/html~g" /etc/php/7.0/fpm/pool.d/www.conf
 sed -i "s~php_value\[session.save_path\] = .*$~php_value\[session.save_path\] = $www_dir/session~g" /etc/php/7.0/fpm/pool.d/www.conf
@@ -116,6 +117,7 @@ sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL-$user.conf
 $add_user_file $user
 sed -i "s~user = .*$~user = www-data~g" /etc/php/7.0/fpm/pool.d/$user.conf
 sed -i "s~group = .*$~group = www-data~g" /etc/php/7.0/fpm/pool.d/$user.conf
+sed -i "s~listen.owner = .*$~listen.owner = www-data~g" /etc/php/7.0/fpm/pool.d/$user.conf
 
 mkdir $www_dir/phpmyadmin/{,log}
 ln -s /usr/share/phpmyadmin $www_dir/phpmyadmin/html
