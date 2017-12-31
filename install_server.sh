@@ -24,8 +24,9 @@ Match Group $sftp_group
 	ChrootDirectory $www_dir/%u/
 	ForceCommand internal-sftp
 
-AllowUser $ssh_user
-AllowGroup $sftp_group" >> $ssh_file
+AllowUsers $ssh_user
+AllowGroups $sftp_group" >> $ssh_file
+systemctl reload ssh
 
 apt-get -y upgrade
 apt-get -y dist-upgrade
