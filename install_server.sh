@@ -59,7 +59,6 @@ echo '<?php phpinfo(); ?>' > $web_dir/php.php
 
 mv /etc/php/7.0/fpm/pool.d/www.conf $script_dir/skeleton/php-fpm/www.conf.bckp
 mkdir /var/log/php-fpm/
-sed -i "s/^Alias \/phpmyadmin/#Alias \/phpmyadmin/" /etc/phpmyadmin/apache.conf
 
 echo -e "
 # Server name
@@ -124,6 +123,8 @@ mkdir $www_dir/phpmyadmin/{,log}
 ln -s /usr/share/phpmyadmin $www_dir/phpmyadmin/html
 
 echo -e '
+useradd -U $user -d $www_dir/$user/
+
 cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
 sed -i "s/\$user/$user/g" $apache_available_dir/SSL-$user.conf
 sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
@@ -134,7 +135,7 @@ mkdir $www_dir/$user/
 cp -rf $script_dir/skeleton/user/* $www_dir/$user/
 ln -s /var/log/php-fpm/$user/ $www_dir/$user/log
 
-sed -i "s/server_subdomains=(\(.*\))/server_subdomains=(\1 $user)/ $script_dir/incl/config"
+sed -i "s/server_subdomains=(\(.*\))/server_subdomains=(\1 $user)/" $script_dir/incl/config
 
 a2ensite SSL-$user
 
@@ -142,10 +143,12 @@ systemctl daemon-reload
 /etc/init.d/php7.0-fpm reload
 /etc/init.d/apache2 reload
 
+chown $user:$user -R $www_dir/$user
+
 certbot --apache --expand -d $server_domain.$server_tld -d $user.$server_domain.$server_tld' >> $add_user_file
 
 rm -rf $apache_enabled_dir/*
-a2ensite local SSL-www SSL-phpmyadmin
+a2ensite local SSL-www SSL-phpmyadmin local
 
 systemctl daemon-reload
 /etc/init.d/php7.0-fpm restart
@@ -160,6 +163,8 @@ certbot $letsencrypt_options
 systemctl daemon-reload
 /etc/init.d/apache2 restart
 /etc/init.d/php7.0-fpm restart
+
+chown $web_user:$web_user -R $www_dir
 
 echo -e "
 

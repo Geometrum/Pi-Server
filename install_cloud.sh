@@ -10,6 +10,8 @@ apt-get -y install apache2 mysql-server libapache2-mod-php7.0
 apt-get -y install php7.0-gd php7.0-json php7.0-mysql php7.0-curl php7.0-mbstring
 apt-get -y install php7.0-intl php7.0-mcrypt php-imagick php7.0-xml php7.0-zip
 
+sed -i "s~^#c~~g" $apache_available_dir/local.conf
+
 $add_user_file $nextcloud_name
 
 wget https://download.nextcloud.com/server/releases/latest.zip
@@ -18,9 +20,17 @@ sha512 -c latest.zip.sh512 < latest.zip
 unzip latest.zip
 rm latest.zip*
 mv nextcloud $nextcloud_dir
-ln -s $nextcloud_dir $www_dir/$nextcloud_name/
+rm -rf $www_dir/$nextcloud_name/html
+ln -s $nextcloud_dir $www_dir/$nextcloud_name/html
 
-chown -R $web_user:$web_user $nextcloud_dir
+chown -R $nextcloud_name:$nextcloud_name $nextcloud_dir
+
+sed -i "s~0 => 'localhost',~0 => '$nextcloud_name.$server_domain.$server_tld',\
+    1 => '$local_ip',\
+    2 => 'localhost',~" $nextcloud_dir/config/config.php
+
+sed -i "s~'overwrite.cli.url' => 'http://localhost',~'overwrite.cli.url' => 'https://$nextcloud_name.$server_domain.$server_tld',\
+    'htaccess.RewriteBase' => '/',~" $nextcloud_dir/config/config.php
 
 a2enmod headers
 a2enmod env
