@@ -69,6 +69,15 @@ ServerSignature off
 ServerTokens Prod" >> $apache_config_file
 #Header Always Set Strict-Transport-Security \"includeSubdomains;\"" >> $apache_config_file
 
+echo -e "
+opcache.enable=1
+opcache.enable_cli=1
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=10000
+opcache.memory_consumption=128
+opcache.save_comments=1
+opcache.revalidate_freq=1" >> /etc/php/7.0/fpm/php.ini
+
 echo -e '#!/bin/bash
 source incl/include.sh
 
@@ -127,12 +136,16 @@ useradd -U $user -d $www_dir/$user/
 
 cp $script_dir/skeleton/apache/SSL-user.conf $apache_available_dir/SSL-$user.conf
 sed -i "s/\$user/$user/g" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$domain/$domain/g" $apache_available_dir/SSL-$user.conf
-sed -i "s/\$tld/$tld/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$domain/$server_domain/g" $apache_available_dir/SSL-$user.conf
+sed -i "s/\$tld/$server_tld/g" $apache_available_dir/SSL-$user.conf
 sed -i "s~\$www_dir~$www_dir~g" $apache_available_dir/SSL-$user.conf
 
 mkdir $www_dir/$user/
 cp -rf $script_dir/skeleton/user/* $www_dir/$user/
+mkdir /var/log/php-fpm/$user
+touch /var/log/php-fpm/error.log
+chown $www-data:$www-data -R /var/log/php-fpm/$user
+chown $user:$www-data /var/log/php-fpm/$user/error.log
 ln -s /var/log/php-fpm/$user/ $www_dir/$user/log
 
 sed -i "s/server_subdomains=(\(.*\))/server_subdomains=(\1 $user)/" $script_dir/incl/config

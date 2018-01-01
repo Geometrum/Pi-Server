@@ -12,6 +12,22 @@ apt-get -y install php7.0-intl php7.0-mcrypt php-imagick php7.0-xml php7.0-zip
 
 sed -i "s~^#c~~g" $apache_available_dir/local.conf
 
+echo -e "
+<Directory /var/www/cloud/html/>
+  Options Indexes FollowSymlinks
+  AllowOverride All
+  Require all granted
+
+ <IfModule mod_dav.c>
+  Dav off
+ </IfModule>
+
+ Satisfy Any
+ SetEnv HOME /var/www/cloud/html
+ SetEnv HTTP_HOME /var/www/cloud/html
+
+</Directory>" >> $apache_config_file
+
 $add_user_file $nextcloud_name
 
 wget https://download.nextcloud.com/server/releases/latest.zip
@@ -24,13 +40,6 @@ rm -rf $www_dir/$nextcloud_name/html
 ln -s $nextcloud_dir $www_dir/$nextcloud_name/html
 
 chown -R $nextcloud_name:$nextcloud_name $nextcloud_dir
-
-sed -i "s~0 => 'localhost',~0 => '$nextcloud_name.$server_domain.$server_tld',\
-    1 => '$local_ip',\
-    2 => 'localhost',~" $nextcloud_dir/config/config.php
-
-sed -i "s~'overwrite.cli.url' => 'http://localhost',~'overwrite.cli.url' => 'https://$nextcloud_name.$server_domain.$server_tld',\
-    'htaccess.RewriteBase' => '/',~" $nextcloud_dir/config/config.php
 
 a2enmod headers
 a2enmod env
@@ -49,6 +58,17 @@ Root password (mysql)"
 mysql -u root -e "FLUSH PRIVILEGES; CREATE USER \"$cloud_user\"@localhost IDENTIFIED BY \"$pass\"; CREATE DATABASE $nextcloud_name; GRANT ALL PRIVILEGES ON $nextcloud_name.* TO \"$cloud_user\"@localhost;" -p
 
 sudo -u www-data php $nextcloud_dir/occ maintenance:install --database "mysql" --database-name "$nextcloud_name" --database-user "$cloud_user" --database-pass "$pass" --admin-user "$cloud_admin" --admin-pass "$adminPass"
+
+sed -i "s~0 => 'localhost',~0 => '$nextcloud_name.$server_domain.$server_tld',\
+    1 => '$local_ip',\
+    2 => 'localhost',~" $nextcloud_dir/config/config.php
+
+sed -i "s~'overwrite.cli.url' => 'http://localhost',~'overwrite.cli.url' => 'https://$nextcloud_name.$server_domain.$server_tld',\
+    'htaccess.RewriteBase' => '/',~" $nextcloud_dir/config/config.php
+
+ln -s $nextcloud_dir/data/nextcloud.log $www_dir/$nextcloud_name/log/
+
+sudo -u www-data php $nextcloud_dir/occ maintenance:update:htaccess
 
 rm -rf $apache_enabled_dir/*
 
